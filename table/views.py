@@ -6,14 +6,10 @@ from .models import Order
 
 sp = SQLProcessing()
 sheet = sp.sheet
-check = sp.check_equality()
-idx = sp.data_getter().shape[0]
 
 
 def home(request):
-    if not check:
-        sp.delete_all()
-        sp.data_input()
+    sp.check_equality()
 
     orders = Order.objects.all().order_by('id')
     paginator = Paginator(orders, per_page=4)
@@ -28,7 +24,7 @@ def home(request):
 def create(request):
     form = OrderForm()
     rate = sp.get_currency_rate()
-    pk = idx + 1
+    pk = sp.sheet_getter().shape[0] + 1
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():

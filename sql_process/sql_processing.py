@@ -15,10 +15,10 @@ class SQLProcessing(GetSheet):
     from USD to Ruble.
     data_getter: function to get all data from the table (table_order), return it as a DataFrame, that make next steps
     easier to do.
-    check_equality: function to check if every element in both table and sheet are equal
     data_input: function to put data into table (table_order) from the Google sheet.
     data_delete: function to delete all data from the table.
-
+    check_equality: function to check if every element in both table and sheet are equal, to add unfounded elements
+    or update them.
     this class has inherits from GetSheet class that gives an ability to work and use all functions and attributes
     of both classes
     """
@@ -26,7 +26,8 @@ class SQLProcessing(GetSheet):
     def __init__(self):
         super().__init__()
         # Connect to your postgres DB
-        self.conn = psycopg2.connect(dbname="numbers", user="postgres", password="1234", host='localhost', port='5432')
+        self.conn = psycopg2.connect(dbname="numbers-tz", user="postgres", password="1234", host='localhost',
+                                     port='5432')
         self.cur = self.conn.cursor()  # Open a cursor to perform database operations
         self.data = self.sheet_getter()
 
@@ -50,15 +51,6 @@ class SQLProcessing(GetSheet):
         cols = ['№', 'заказ №', 'стоимость, $', 'стоимость_руб', 'срок поставки']
         return pd.DataFrame(self.cur.fetchall(), columns=cols)
 
-    def check_equality(self):
-        df_table = self.data_getter()
-        df_sheet = self.sheet_getter()
-        labels = ['заказ №', 'стоимость, $', 'срок поставки']
-        check = set()
-        for label in labels:
-            check.add(all((df_table[label] == df_sheet[label])))
-        return all(check)
-
     def data_input(self):
         cols = 'id, order_num, price_usd, price_rub, delivery_time'
         values = '%s, %s, %s, %s, %s'
@@ -76,3 +68,18 @@ class SQLProcessing(GetSheet):
         self.cur.execute('DELETE FROM table_order')
         self.cur.execute('TRUNCATE table_order RESTART IDENTITY;')
         self.conn.commit()
+
+    def check_equality(self):
+        df_table = self.data_getter()
+        df_sheet = self.sheet_getter()
+        labels = ['заказ №', 'стоимость, $', 'срок поставки']
+        if df_sheet.shape[0] != df_table.shape[0]:
+            self.delete_all()
+            self.data_input()
+        else:
+            check = set()
+            for label in labels:
+                check.add(all((df_table[label] == df_sheet[label])))
+            if not all(check):
+                self.delete_all()
+                self.data_input()

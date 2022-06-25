@@ -65,7 +65,7 @@ WSGI_APPLICATION = 'spa.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'numbers',
+        'NAME': 'numbers-tz',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': '127.0.0.1',
