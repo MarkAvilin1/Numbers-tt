@@ -47,22 +47,25 @@ def create(request):
 
 def update(request, pk):
     data = Order.objects.get(id=pk)
-    form = OrderForm(instance=data)
+    # form = OrderForm(data)
     rate = sp.get_currency_rate()
     if request.method == 'POST':
-        form = OrderForm(request.POST, instance=data)
+        form = OrderForm(request.POST)
         if form.is_valid():
             order_num = form.cleaned_data.get('order_num')
             price_usd = form.cleaned_data.get('price_usd')
+            price_rub = form.cleaned_data.get('price_rub')
             delivery_time = form.cleaned_data.get('delivery_time')
             all_data = [pk, order_num, price_usd, delivery_time]
+            sql_data = Order(id=pk, order_num=order_num, price_usd=price_usd, price_rub=price_rub,
+                             delivery_time=delivery_time)
             sp.sheet.delete_row(pk + 1)
             sp.sheet.insert_row(all_data, pk + 1)
-            form.save()
+            sql_data.save()
             return redirect('/')
     context = {
         'data': data,
-        'form': form,
+        # 'form': form,
         'rate': rate,
     }
     return render(request, 'update.html', context)

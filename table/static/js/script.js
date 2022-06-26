@@ -4,7 +4,7 @@ function usd2rub(){
         var rate = document.getElementById("rate").innerHTML;
         var rub = usd * rate
         document.getElementById("rub").value = rub
-        console.log(usd)
-        console.log(rate)
-        console.log(rub)
+//        console.log(usd)
+//        console.log(rate)
+//        console.log(rub)
     }
