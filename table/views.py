@@ -1,6 +1,7 @@
-from sql_process.sql_processing import SQLProcessing
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
+
+from sql_process.sql_processing import SQLProcessing
 from .forms import OrderForm
 from .models import Order
 
@@ -47,7 +48,6 @@ def create(request):
 
 def update(request, pk):
     data = Order.objects.get(id=pk)
-    # form = OrderForm(data)
     rate = sp.get_currency_rate()
     if request.method == 'POST':
         form = OrderForm(request.POST)
@@ -65,7 +65,6 @@ def update(request, pk):
             return redirect('/')
     context = {
         'data': data,
-        # 'form': form,
         'rate': rate,
     }
     return render(request, 'update.html', context)
